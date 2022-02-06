@@ -1,0 +1,42 @@
+version: '3.8'
+volumes:
+  data:
+  logs:
+services:
+  mongodb:
+    image: 'mongo'
+    volumes:
+      - data:/data/db
+    env_file:
+      - ./environment.env
+    environment:
+      APP_VERSION: 1.0
+      APP_DESCRIPTION: "Full stack web app"
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/backend
+      - logs:/backend/logs
+      - /backend/node_modules
+    ports:
+      - "80:80"
+    depends_on:
+      - mongodb
+    env_file:
+      - ./backend.env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/frontend
+      - /frontend/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
